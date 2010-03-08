@@ -91,19 +91,13 @@ function bbb_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'op' => array(
-        'description' => t('TODO: please describe this field!'),
-        'type' => 'varchar',
-        'length' => '32',
-        'not null' => TRUE,
-      ),
       'role' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
-      'created' => array(
+      'joined' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'int',
         'not null' => TRUE,

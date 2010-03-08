@@ -28,6 +28,12 @@ function bbb_schema() {
         'length' => '255',
         'not null' => TRUE,
       ),
+      'name' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
       'meetingID' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
@@ -46,6 +52,24 @@ function bbb_schema() {
         'length' => '32',
         'not null' => TRUE,
       ),
+      'welcome' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'dialNumber' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'logoutURL' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
       'created' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'int',
@@ -53,6 +77,42 @@ function bbb_schema() {
       ),
     ),
     'primary key' => array('nid'),
+  );
+  $schema['bbb_stats'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'op' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'role' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'uid' => array('uid'),
+    ),
   );
   return $schema;
 }
@@ -62,6 +122,7 @@ function bbb_schema() {
  */
 function bbb_install() {
   drupal_install_schema('bbb_meetings');
+  drupal_install_schema('bbb_stats');
 }
 
 /**
@@ -72,4 +133,5 @@ function bbb_uninstall() {
   db_query("DELETE FROM {variable} WHERE name LIKE 'bbb_%'");
   // Remove tables
   drupal_uninstall_schema('bbb_meetings');
+  drupal_uninstall_schema('bbb_stats');
 }

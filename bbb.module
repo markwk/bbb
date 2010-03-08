@@ -12,10 +12,10 @@
 
 // Security Salt
 // see /var/lib/tomcat6/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties
-define('BIGBLUEBUTTON_SECURITY_SALT', '76b71974198f26ecc5a594eddddf49d1');
+define('BIGBLUEBUTTON_SECURITY_SALT', variable_get('bbb_security_salt', '76b71974198f26ecc5a594eddddf49d1'));
 
 // Define API URLs
-define('BIGBLUEBUTTON_BASE_URL', 'http://195.34.183.204/bigbluebutton/');
+define('BIGBLUEBUTTON_BASE_URL', variable_get('bbb_base_url', 'http://195.34.183.204/bigbluebutton/'));
 define('BIGBLUEBUTTON_CREATE_URL', 'api/create');
 define('BIGBLUEBUTTON_JOIN_URL', 'api/join');
 define('BIGBLUEBUTTON_END_MEETING_URL', 'api/endMeeting');
@@ -39,12 +39,19 @@ function bbb_perm() {
 function bbb_menu() {
   $items = array();
   $items['node/%node/%'] = array(
-    'title' => 'bigbluebutton callback',
+    'title' => 'bigbluebutton menu callback',
     'page callback' => 'bbb_redirect',
     'page arguments' => array(2, 1, 3),
     'access callback' => 'bbb_access',
     'access arguments' => array(2, 1),
     'type' => MENU_CALLBACK,
+  );
+  $items['admin/settings/bigbluebutton'] = array(
+    'title' => 'BigBlueButton Conferencing',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bbb_settings'),
+    'access arguments' => array('administer bigbluebutton'),
+    'type' => MENU_NORMAL_ITEM,
   );
   return $items;
 }
@@ -84,11 +91,53 @@ function bbb_access($op, $node) {
  * Implement form_alter().
  */
 function bbb_form_alter(&$form, &$form_state, $form_id) {
+  // Node type settings form
   if ($form_id == 'node_type_form') {
     $form['bbb_content_type_usage'] = array(
       '#type' => 'checkbox',
       '#title' => t('Treat this node type as BigBlueButton'),
       '#default_value' => variable_get('bbb_content_type_usage_' . $form['#node_type']->type, FALSE),
+    );
+  }
+
+  // Node edit form
+  if (drupal_substr($form_id, (drupal_strlen($form_id) - 10), 10) == '_node_form' && 
+      bbb_is_meeting_type($form['type']['#value'])) {
+    if (is_numeric($form['nid']['#value'])) {
+      $meeting = bbb_get_meeting($form['nid']['#value']);
+    }
+
+    $form['bbb'] = array(
+      '#title' => t('Conference settings'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#tree' => TRUE,
+    );
+    $form['bbb']['welcome'] = array(
+      '#title' => t('Welcome message'),
+      '#type' => 'textfield',
+      '#default_value' => $meeting->welcome,
+    );
+    $form['bbb']['dialNumber'] = array(
+      '#title' => t('Dial number'),
+      '#type' => 'textfield',
+      '#default_value' => $meeting->dialNumber,
+    );
+    $form['bbb']['moderatorPW'] = array(
+      '#title' => t('Moderator password'),
+      '#type' => 'textfield',
+      '#default_value' => $meeting->moderatorPW,
+    );
+    $form['bbb']['attendeePW'] = array(
+      '#title' => t('Attendee password'),
+      '#type' => 'textfield',
+      '#default_value' => $meeting->attendeePW,
+    );
+    $form['bbb']['logoutURL'] = array(
+      '#title' => t('Logout URL'),
+      '#type' => 'textfield',
+      '#default_value' => $meeting->logoutURL,
     );
   }
 }
@@ -103,7 +152,25 @@ function bbb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   
   switch ($op) {
     case 'insert':
-      bbb_create_meeting($node);
+      foreach ($node->bbb as $key => $value) {
+        if (empty($node->bbb[$key])) {
+          unset($node->bbb[$key]);
+        }
+      }
+      bbb_create_meeting($node, $node->bbb);
+      break;
+    case 'update':
+      $meeting = bbb_get_meeting($node->nid);
+      if ($meeting->is_running) {
+        drupal_set_message(t('Could not update conference settings while meeting in progress.'), 'error');
+        return;
+      }
+      foreach ($node->bbb as $key => $value) {
+        if (empty($node->bbb[$key])) {
+          unset($node->bbb[$key]);
+        }
+      }
+      bbb_update_meeting($node, $node->bbb);
       break;
     case 'view':
       $meeting = bbb_get_meeting($node->nid);
@@ -225,18 +292,32 @@ function bbb_get_meeting($nid, $account = NULL) {
 }
 
 /**
+ * Update meeting
+ */
+function bbb_update_meeting($node, $params = array()) {
+  db_query("DELETE FROM {bbb_meetings} WHERE nid= %d", $node->nid);
+  unset($params['meetingToken']);
+  unset($params['meetingID']);
+  return bbb_create_meeting($node, $params);
+}
+
+/**
  * Create meeting
  */
-function bbb_create_meeting($node) {
-  $params = array(
+function bbb_create_meeting($node, $params = array()) {
+  $params += array(
     'name' => check_plain($node->title),
-    'meetingID' => 'drupal-bigbluebutton-' . $node->type . '-' . $node->nid,
-    'logoutURL' => url('node/' . $node->nid),
+    'meetingID' => 'drupal-bigbluebutton-' . $node->type . '-' . $node->nid . '-' . time(),
+    'attendeePW' => user_password(),
+    'moderatorPW' => user_password(),
+    'welcome' => t('Welcome to @title', array('@title' => $node->title)),
+    'dialNumber' => '',
+    'logoutURL' => url('node/' . $node->nid, array('absolute' => TRUE)),
   );
   if ($data = bbb_api_create($params)) {
     $data->nid = $node->nid;
     $data->created = time();
-    drupal_write_record('bbb_meetings', $data);
+    drupal_write_record('bbb_meetings', array_merge($params, (array) $data));
   }
   return FALSE;
 }
@@ -299,6 +380,28 @@ function bbb_redirect($op, $node) {
     drupal_goto($path);
   }
   die();
+}
+
+/**
+ * Administrative settings; Menu callback
+ */
+function bbb_settings() {
+  $form = array();
+  $form['bbb'] = array(
+    '#title' => 'Server settings',
+    '#type' => 'fieldset',
+  );
+  $form['bbb']['bbb_base_url'] = array(
+    '#title' => t('Base URL'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('bbb_base_url', BIGBLUEBUTTON_BASE_URL),
+  );
+  $form['bbb']['bbb_security_salt'] = array(
+    '#title' => t('Security Salt'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('bbb_security_salt', BIGBLUEBUTTON_SECURITY_SALT),
+  );
+  return system_settings_form($form);
 }
 
 /* Themeables */

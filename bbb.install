@@ -1,0 +1,75 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * learning experience.
+ * 
+ * @author
+ * Stefan Auditor <stefan.auditor@erdfisch.de>
+ */
+
+/**
+ * Implement hook_schema().
+ */
+function bbb_schema() {
+  $schema['bbb_meetings'] = array(
+    'description' => t('TODO: please describe this table!'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'meetingToken' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'meetingID' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'attendeePW' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'moderatorPW' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implement hook_install().
+ */
+function bbb_install() {
+  drupal_install_schema('bbb_meetings');
+}
+
+/**
+ * Implement hook_uninstall().
+ */
+function bbb_uninstall() {
+  // Remove variables
+  db_query("DELETE FROM {variable} WHERE name LIKE 'bbb_%'");
+  // Remove tables
+  drupal_uninstall_schema('bbb_meetings');
+}

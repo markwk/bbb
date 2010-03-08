@@ -1,0 +1,4 @@
+; $Id$
+name = BigBlueButton
+description = Enables universities and colleges to deliver a high-quality learning experience.
+core = 6.x

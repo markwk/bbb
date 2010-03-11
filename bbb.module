@@ -15,7 +15,7 @@
 define('BIGBLUEBUTTON_SECURITY_SALT', variable_get('bbb_security_salt', '76b71974198f26ecc5a594eddddf49d1'));
 
 // Define API URLs
-define('BIGBLUEBUTTON_BASE_URL', variable_get('bbb_base_url', 'http://195.34.183.204/bigbluebutton/'));
+define('BIGBLUEBUTTON_BASE_URL', variable_get('bbb_base_url', 'http://195.34.183.202/bigbluebutton/'));
 define('BIGBLUEBUTTON_CREATE_URL', 'api/create');
 define('BIGBLUEBUTTON_JOIN_URL', 'api/join');
 define('BIGBLUEBUTTON_END_MEETING_URL', 'api/endMeeting');
@@ -104,15 +104,76 @@ function bbb_access_moderator($node) {
 }
 
 /**
+ * Implement hook_block().
+ */
+function bbb_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks[0] = array(
+      'info' => t('Meeting details'),
+      'weight' => 0,
+      'status' => 1,
+      'region' => 'left'
+    );
+    return $blocks;
+  }
+  else if ($op == 'configure' && $delta == 0) {
+  }
+  else if ($op == 'save' && $delta == 0) {
+  }
+  else if ($op == 'view') {
+    switch($delta) {
+      case 0:
+        $block = array(
+          'subject' => t('Meeting'),
+          'content' => bbb_block_meeting(),
+        );
+        break;
+    }
+    return $block;
+  }
+}
+
+/**
+ * Meeting details block
+ */
+function bbb_block_meeting() {
+  $output = '';
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $meeting = bbb_get_meeting(arg(1));
+    if ($meeting) {
+      $output = theme('bbb_block_meeting', $meeting);
+    }
+  }
+  return $output;
+}
+
+/**
  * Implement form_alter().
  */
 function bbb_form_alter(&$form, &$form_state, $form_id) {
+
   // Node type settings form
   if ($form_id == 'node_type_form') {
-    $form['bbb_content_type_usage'] = array(
+    $form['bbb'] = array(
+      '#title' => t('Big Blue Button settings'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['bbb']['bbb_content_type_usage'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Treat this node type as BigBlueButton'),
+      '#title' => t('Treat this node type as conference'),
       '#default_value' => variable_get('bbb_content_type_usage_' . $form['#node_type']->type, FALSE),
+    );
+    $form['bbb']['bbb_content_type_show_links'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show links to join / start a meeting beneath the node'),
+      '#default_value' => variable_get('bbb_content_type_show_links_' . $form['#node_type']->type, FALSE),
+    );
+    $form['bbb']['bbb_content_type_show_status'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display meeting status on node'),
+      '#default_value' => variable_get('bbb_content_type_show_status_' . $form['#node_type']->type, FALSE),
     );
   }
 
@@ -199,6 +260,10 @@ function bbb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       bbb_update_meeting($node, $node->bbb);
       break;
     case 'view':
+      if (!variable_get('bbb_content_type_show_status_' . $node->type, FALSE)) {
+        return;
+      }
+
       $meeting = bbb_get_meeting($node->nid);
       $node->content['bbb_meeting_status'] = array(
         '#value' => theme('bbb_meeting_status', $meeting),
@@ -221,8 +286,9 @@ function bbb_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 function bbb_link($type, $object, $teaser = FALSE) {
   $links = array();
 
-  if ($type == 'node' && bbb_is_meeting_type($object->type)) {
-    if (!$teaser) {
+  if ($type == 'node' && bbb_is_meeting_type($object->type) ) {
+    $show = variable_get('bbb_content_type_show_links_' . $object->type, FALSE);
+    if (!$teaser && $show) {
 
       $meeting = bbb_get_meeting($object->nid);
       if ((user_access('moderate meetings') || user_access('administer bigbluebutton')) ||
@@ -256,6 +322,9 @@ function bbb_theme($existing, $type, $theme, $path) {
       'arguments' => array('meeting' => NULL),
     ),
     'bbb_meeting_join_attendee' => array(
+      'arguments' => array('meeting' => NULL),
+    ),
+    'bbb_block_meeting' => array(
       'arguments' => array('meeting' => NULL),
     ),
   );
@@ -296,15 +365,18 @@ function bbb_get_meeting($nid, $account = NULL) {
 
   $meeting = new stdClass();
   $meeting = db_fetch_object(db_query("SELECT * FROM {bbb_meetings} WHERE nid = %d", $nid));
-  $meeting->is_running = bbb_api_isMeetingRunning(array('meetingToken' => $meeting->meetingToken));
-  $meeting->url = array(
-    'join_attendee' => bbb_api_join(array('fullName' => $account->name, 'meetingToken' => $meeting->meetingToken, 'password' => $meeting->attendeePW)),
-    'join_moderator' => bbb_api_join(array('fullName' => $account->name, 'meetingToken' => $meeting->meetingToken, 'password' => $meeting->moderatorPW)),
-  );
-  // Allow alteration for e.g. access control
-  // Just implement hook_bigbluebutton_meeting_alter(&$data) {} in your module
-  drupal_alter('bigbluebutton_meeting', &$meeting);
-  return $meeting;
+  if ($meeting->meetingToken) {
+    $meeting->is_running = bbb_api_isMeetingRunning(array('meetingToken' => $meeting->meetingToken));
+    $meeting->url = array(
+      'join_attendee' => bbb_api_join(array('fullName' => $account->name, 'meetingToken' => $meeting->meetingToken, 'password' => $meeting->attendeePW)),
+      'join_moderator' => bbb_api_join(array('fullName' => $account->name, 'meetingToken' => $meeting->meetingToken, 'password' => $meeting->moderatorPW)),
+    );
+    // Allow alteration for e.g. access control
+    // Just implement hook_bigbluebutton_meeting_alter(&$data) {} in your module
+    drupal_alter('bigbluebutton_meeting', &$meeting);
+    return $meeting;
+  }
+  return FALSE;
 }
 
 /**
@@ -364,7 +436,7 @@ function bbb_join($node, $role) {
 
   $stats = new stdClass();
   $stats->nid  = $node->nid;
-  $stats->uid  = $node->uid;
+  $stats->uid  = $user->uid;
   $stats->role = $role;
   $stats->joined = time();
 
@@ -398,6 +470,33 @@ function bbb_join($node, $role) {
 function theme_bbb_meeting_status($meeting) {
   $output = '<div>';
   $output .= t('Status: !state', array('!state' => ($meeting->is_running ? t('Meeting is in progress.') : t('Meeting has not yet started.'))));
+  $output .= '</div>';
+  return $output;
+}
+
+/**
+ * Theme meeting details block
+ */
+function theme_bbb_block_meeting($meeting) {
+  $output = '<div class="meeting-details">';
+  if ($meeting->welcome) {
+    $output .= '<div class="welcome">' . $meeting->welcome . '</div>';
+  }
+  if ($meeting->is_running) {
+    $output .= '<div class="status-is-running">' . t('Status: Meeting is running') . '</div>';
+  }
+  else {
+    $output .= '<div class="status-is-not-running">' . t('Status: Meeting is not running') . '</div>';
+  }
+  if ($meeting->dialNumber) {
+    $output .= '<div class="dial-number">' . t('Phone: @number', array('@number' => $meeting->dialNumber)) . '</div>';
+  }
+  if (user_access('moderate meetings') || user_access('administer bigbluebutton')) {
+    $output .= '<div class="join-moderator">' . l($meeting->is_running ? t('Join meeting as moderator') : t('Start meeting'), 'node/' . $meeting->nid . '/join/moderator') . '</div>';
+  }
+  if (user_access('attend meetings') || user_access('administer bigbluebutton')) {
+    $output .= '<div class="join-attendee">' . l('Join meeting', 'node/' . $meeting->nid . '/join/attendee') . '</div>';
+  }
   $output .= '</div>';
   return $output;
 }

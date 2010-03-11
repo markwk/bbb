@@ -1,0 +1,7 @@
+; $Id$
+name = Views Integration
+description = Provides integration and default views.
+package = Big Blue Button
+requirements[] = bbb
+requirements[] = views
+core = 6.x

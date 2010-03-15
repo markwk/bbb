@@ -235,10 +235,12 @@ function bbb_api_generate_querystring($params = array()) {
  * @return OBJECT
  */
 function bbb_api_parse_response($xml) {
+  //TODO: Refactor
   $response = new StdClass;
-  foreach ($xml as $element => $node) {
-    //TODO: Refactor
-    $response->$element = (string) $node;
+  if ($xml) {
+    foreach ($xml as $element => $node) {
+      $response->$element = (string) $node;
+    }
   }
   return $response;
 }

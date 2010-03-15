@@ -5,7 +5,7 @@
  * @file
  * BigBlueButton - Enables universities and colleges to deliver a high-quality
  * learning experience.
- * 
+ *
  * @author
  * Stefan Auditor <stefan.auditor@erdfisch.de>
  */
@@ -161,7 +161,7 @@ function bbb_views_views_data() {
         'base' => 'node',
         'field' => 'nid',
         'handler' => 'views_handler_relationship',
-        'label' => t('Node'), 
+        'label' => t('Node'),
     ),
   );
   $data['bbb_stats']['table']['join']['users'] = array(
@@ -199,4 +199,3 @@ function bbb_views_views_data() {
 
   return $data;
 }
-

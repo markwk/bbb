@@ -5,7 +5,7 @@
  * @file
  * BigBlueButton - Enables universities and colleges to deliver a high-quality
  * learning experience.
- * 
+ *
  * @author
  * Stefan Auditor <stefan.auditor@erdfisch.de>
  */
@@ -91,13 +91,13 @@ function bbb_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'role' => array(
+      'mode' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
-      'joined' => array(
+      'created' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'int',
         'not null' => TRUE,
@@ -115,8 +115,7 @@ function bbb_schema() {
  * Implement hook_install().
  */
 function bbb_install() {
-  drupal_install_schema('bbb_meetings');
-  drupal_install_schema('bbb_stats');
+  drupal_install_schema('bbb');
 }
 
 /**
@@ -126,6 +125,5 @@ function bbb_uninstall() {
   // Remove variables
   db_query("DELETE FROM {variable} WHERE name LIKE 'bbb_%'");
   // Remove tables
-  drupal_uninstall_schema('bbb_meetings');
-  drupal_uninstall_schema('bbb_stats');
+  drupal_uninstall_schema('bbb');
 }

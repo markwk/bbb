@@ -24,15 +24,15 @@
  *     join the meeting. This is optional, and if not supplied, BBB will assign
  *     a random password.
  *   - moderatorPW: STRING The password that will be required for moderators to
- *     join the meeting or for certain administrative actions (i.e. ending a 
+ *     join the meeting or for certain administrative actions (i.e. ending a
  *     meeting). This is optional, and if not supplied, BBB will assign a
  *     random password.
  *   - welcome: STRING A welcome message that gets displayed on the chat window
- *     when the participant joins. You can include keywords (%%CONFNAME%%, 
+ *     when the participant joins. You can include keywords (%%CONFNAME%%,
  *     %%DIALNUM%%, %%CONFNUM%%) which will be substituted automatically. You
  *     can set a default welcome message on bigbluebutton.properties
  *   - dialNumber: STRING The dial access number that participants can call in
- *     using regular phone. You can set a default dial number on 
+ *     using regular phone. You can set a default dial number on
  *     bigbluebutton.properties
  *   - logoutURL: STRING The URL that the BigBlueButton client will go to after
  *     users click the OK button on the 'You have been logged out message'.
@@ -47,25 +47,25 @@
  *     in subsequent calls for joining or otherwise modifying a meeting's
  *     status.
  *   - attendeePW: STRING The password that will be required for attendees to
- *     join the meeting. If you did not supply one, BBB will assign a random 
+ *     join the meeting. If you did not supply one, BBB will assign a random
  *     password.
  *   - moderatorPW: STRING The password that will be required for moderators to
  *     join the meeting or for certain administrative actions (i.e. ending a
  *     meeting). If you did not supply one, BBB will assign a random password.
- * 
+ *
  * @see http://code.google.com/p/bigbluebutton/wiki/API#Create_Meeting_(create)
  */
 function bbb_api_create($params = array()) {
   $query_string = bbb_api_generate_querystring($params);
   $request = BIGBLUEBUTTON_BASE_URL . BIGBLUEBUTTON_CREATE_URL . '?' . $query_string;
-  $xml = simplexml_load_file($request);
+  $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
 
   if ($response->returncode == 'SUCCESS') {
     unset($response->returncode);
     return $response;
   }
-  else { 
+  else {
     watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -73,7 +73,7 @@ function bbb_api_create($params = array()) {
 
 /**
  * Join Meeting (join)
- * 
+ *
  * @param ARRAY $params
  *   Associative array of additional url parameters. Components:
  *   - fullName: STRING (REQUIRED) The full name that is to be used to identify
@@ -106,10 +106,10 @@ function bbb_api_join($params) {
 
 /**
  * Is meeting running (isMeetingRunning)
- * 
+ *
  * This call enables you to simply check on whether or not a meeting is running
  * by looking it up with either the token or your ID.
- * 
+ *
  * @param ARRAY $params
  *   Associative array of additional url parameters. Components:
  *   - meetingToken: STRING The internal meeting token assigned by the API for
@@ -124,13 +124,13 @@ function bbb_api_join($params) {
 function bbb_api_isMeetingRunning($params) {
   $query_string = bbb_api_generate_querystring($params);
   $request = BIGBLUEBUTTON_BASE_URL . BIGBLUEBUTTON_IS_MEETING_RUNNING_URL . '?' . $query_string;
-  $xml = simplexml_load_file($request);
+  $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
 
   if ($response->returncode == 'SUCCESS') {
-    return strtoupper($response->running) == 'TRUE' ? TRUE : FALSE;
+    return drupal_strtoupper($response->running) == 'TRUE' ? TRUE : FALSE;
   }
-  else { 
+  else {
     watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -138,10 +138,10 @@ function bbb_api_isMeetingRunning($params) {
 
 /**
  * End Meeting (endMeeting)
- * 
+ *
  * Use this to forcibly end a meeting and kick all participants out of the
  * meeting.
- * 
+ *
  * @param ARRAY $params
  *   Associative array of additional url parameters. Components:
  *   - meetingToken: STRING The internal meeting token assigned by the API for
@@ -161,14 +161,14 @@ function bbb_api_isMeetingRunning($params) {
 function bbb_api_endMeeting($params) {
   $query_string = bbb_api_generate_querystring($params);
   $request = BIGBLUEBUTTON_BASE_URL . BIGBLUEBUTTON_END_MEETING_URL . '?' . $query_string;
-  $xml = simplexml_load_file($request);
+  $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
 
   if ($response->returncode == 'SUCCESS') {
     unset($response->returncode);
     return $response;
   }
-  else { 
+  else {
     watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -176,10 +176,10 @@ function bbb_api_endMeeting($params) {
 
 /**
  * Get Meeting Info (getMeetingInfo)
- * 
+ *
  * This call will return all of a meeting's information, including the list of
  * attendees as well as start and end times.
- * 
+ *
  * @param ARRY $params
  *   Associative array of additional url parameters. Components:
  *   - meetingToken: STRING The internal meeting token assigned by the API for
@@ -197,14 +197,14 @@ function bbb_api_endMeeting($params) {
 function bbb_api_getMeetingInfo($params) {
   $query_string = bbb_api_generate_querystring($params);
   $request = BIGBLUEBUTTON_BASE_URL . BIGBLUEBUTTON_GET_MEETING_INFO_URL . '?' . $query_string;
-  $xml = simplexml_load_file($request);
+  $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
 
   if ($response->returncode == 'SUCCESS') {
     unset($response->returncode);
     return $response;
   }
-  else { 
+  else {
     watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
@@ -224,20 +224,21 @@ function bbb_api_generate_querystring($params = array()) {
   // Putting it together
   $query_string = implode('&', $query);
   // Adding the checksum to query string and return
-  return $query_string . '&checksum=' . sha1($query_string . BIGBLUEBUTTON_SECURITY_SALT);
+  $query_string = $query_string . '&checksum=' . sha1($query_string . BIGBLUEBUTTON_SECURITY_SALT);
+  return $query_string;
 }
 
 /**
  * Parse xml response
- * 
+ *
  * @param XML
  * @return OBJECT
  */
 function bbb_api_parse_response($xml) {
   $response = new StdClass;
-  foreach ($xml as $elementName => $node) {
-    //TODO: Refactor 
-    $response->$elementName = (string) $node;
+  foreach ($xml as $element => $node) {
+    //TODO: Refactor
+    $response->$element = (string) $node;
   }
   return $response;
 }

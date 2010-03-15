@@ -5,7 +5,7 @@
  * @file
  * BigBlueButton - Enables universities and colleges to deliver a high-quality
  * learning experience.
- * 
+ *
  * @author
  * Stefan Auditor <stefan.auditor@erdfisch.de>
  */

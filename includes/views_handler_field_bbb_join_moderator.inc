@@ -2,6 +2,15 @@
 // $Id$
 
 /**
+ * @file
+ * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * learning experience.
+ *
+ * @author
+ * Stefan Auditor <stefan.auditor@erdfisch.de>
+ */
+
+/**
  * Field handler to present a link to join a meeting as moderator.
  */
 class views_handler_field_bbb_join_moderator extends views_handler_field {

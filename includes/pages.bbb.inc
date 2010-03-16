@@ -3,7 +3,7 @@
 
 /**
  * @file
- * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * Big Blue Button - Enables universities and colleges to deliver a high-quality
  * learning experience.
  *
  * @author
@@ -28,19 +28,19 @@ function bbb_settings() {
   $form['bbb_server'] = array(
     '#title' => 'Server settings',
     '#type' => 'fieldset',
-    '#description' => t('Adjust the default server settings. Read more about BigBlueButton on !home. See the documentation for !documentation', array('!home' => l(t('BigBlueButton.org'), 'http://bigbluebutton.org/'), '!documentation' => l(t('installation instructions'), 'http://code.google.com/p/bigbluebutton/'))),
+    '#description' => t('Adjust the default server settings. Read more about Big Blue Button on !home. See the documentation for !documentation', array('!home' => l(t('BigBlueButton.org'), 'http://bigbluebutton.org/'), '!documentation' => l(t('installation instructions'), 'http://code.google.com/p/bigbluebutton/'))),
   );
   $form['bbb_server']['bbb_base_url'] = array(
     '#title' => t('Base URL'),
     '#type' => 'textfield',
     '#default_value' => variable_get('bbb_base_url', BIGBLUEBUTTON_BASE_URL),
-    '#description' => t('The URL that points to your instance of BigBlueButton.'),
+    '#description' => t('The URL that points to your instance of Big Blue Button.'),
   );
   $form['bbb_server']['bbb_security_salt'] = array(
     '#title' => t('Security Salt'),
     '#type' => 'textfield',
     '#default_value' => variable_get('bbb_security_salt', BIGBLUEBUTTON_SECURITY_SALT),
-    '#description' => t('The predefinde security salt. This is a server side configuration option check the BigBlueButton !documentation', array('!documentation' => l(t('documentation'), 'http://code.google.com/p/bigbluebutton/'))),
+    '#description' => t('The predefinde security salt. This is a server side configuration option check the Big Blue Button !documentation', array('!documentation' => l(t('documentation'), 'http://code.google.com/p/bigbluebutton/'))),
   );
   $form['bbb_client'] = array(
     '#title' => t('Client settings'),
@@ -54,7 +54,7 @@ function bbb_settings() {
       'blank' => t('Display in a new window'),
     ),
     '#default_value' => variable_get('bbb_display_mode', BIGBLUEBUTTON_DISPLAY_MODE),
-    '#description' => t('Choose wether to display the conference inline or in a new window.'),
+    '#description' => t('Choose wether to display the meeting inline or in a new window.'),
   );
   $form['bbb_client']['bbb_display_height'] = array(
     '#title' => t('Height x Width'),
@@ -74,7 +74,7 @@ function bbb_settings() {
 //  $form['bbb_default'] = array(
 //    '#title' => 'Default settings',
 //    '#type' => 'fieldset',
-//    '#description' => t('You may provide default settings for nodes associated with BigBlueButton.'),
+//    '#description' => t('You may provide default settings for nodes associated with Big Blue Button.'),
 //  );
 //  $form['bbb_default']['bbb_default_welcome'] = array(
 //    '#title' => t('Welcome message'),

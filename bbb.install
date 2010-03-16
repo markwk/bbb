@@ -3,7 +3,7 @@
 
 /**
  * @file
- * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * Big Blue Button - Enables universities and colleges to deliver a high-quality
  * learning experience.
  *
  * @author
@@ -68,6 +68,12 @@ function bbb_schema() {
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
         'length' => '255',
+        'not null' => TRUE,
+      ),
+      'voicebridge' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'varchar',
+        'length' => '32',
         'not null' => TRUE,
       ),
       'created' => array(

@@ -3,7 +3,7 @@
 
 /**
  * @file
- * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * Big Blue Button - Enables universities and colleges to deliver a high-quality
  * learning experience.
  *
  * @author
@@ -66,7 +66,7 @@ function bbb_api_create($params = array()) {
     return $response;
   }
   else {
-    watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
+    watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
 }
@@ -131,7 +131,7 @@ function bbb_api_isMeetingRunning($params) {
     return drupal_strtoupper($response->running) == 'TRUE' ? TRUE : FALSE;
   }
   else {
-    watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
+    watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
 }
@@ -169,7 +169,7 @@ function bbb_api_endMeeting($params) {
     return $response;
   }
   else {
-    watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
+    watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
 }
@@ -205,7 +205,7 @@ function bbb_api_getMeetingInfo($params) {
     return $response;
   }
   else {
-    watchdog('bigbluebutton', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
+    watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
 }

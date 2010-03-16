@@ -3,7 +3,7 @@
 
 /**
  * @file
- * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * Big Blue Button - Enables universities and colleges to deliver a high-quality
  * learning experience.
  *
  * @author
@@ -170,9 +170,9 @@ function bbb_views_views_data() {
     'type' => 'INNER'
   );
   // Mappings
-  $data['bbb_stats']['role'] = array(
-    'title' => t('Role'),
-    'help' => t("The user's role in the meeting."),
+  $data['bbb_stats']['mode'] = array(
+    'title' => t('Modus'),
+    'help' => t("The user's mode in the meeting."),
     'field' => array(
         'handler' => 'views_handler_field',
     ),

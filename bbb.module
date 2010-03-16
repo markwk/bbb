@@ -3,7 +3,7 @@
 
 /**
  * @file
- * BigBlueButton - Enables universities and colleges to deliver a high-quality
+ * Big Blue Button - Enables universities and colleges to deliver a high-quality
  * learning experience.
  *
  * @author
@@ -34,7 +34,7 @@ include_once(drupal_get_path('modules', 'bbb') . 'includes/api.bbb.inc');
  * Implement hook_perm().
  */
 function bbb_perm() {
-  return array('administer bigbluebutton', 'moderate meetings', 'moderate own meetings', 'attend meetings');
+  return array('administer big blue button', 'moderate meetings', 'moderate own meetings', 'attend meetings');
 }
 
 /**
@@ -81,11 +81,11 @@ function bbb_menu() {
     'file' => 'includes/api.bbb.inc',
   );
   $items['admin/settings/bigbluebutton'] = array(
-    'title' => 'BigBlueButton Conferencing',
-    'description' => 'Default server and conference settings.',
+    'title' => 'Big Blue Button meetings',
+    'description' => 'Default server and meeting settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('bbb_settings'),
-    'access arguments' => array('administer bigbluebutton'),
+    'access arguments' => array('administer big blue button'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/pages.bbb.inc',
   );
@@ -103,7 +103,7 @@ function bbb_access_attendee($node) {
 
   // Check for node access and access to join meetings
   if (node_access('view', $node) &&
-     (user_access('attend meetings') || user_access('administer bigbluebutton'))) {
+     (user_access('attend meetings') || user_access('administer big blue button'))) {
     return TRUE;
   }
   return FALSE;
@@ -120,7 +120,7 @@ function bbb_access_moderator($node) {
 
   // Check for node access and access start meetings
   if (node_access('view', $node) &&
-     ((user_access('moderate meetings') || user_access('administer bigbluebutton')) ||
+     ((user_access('moderate meetings') || user_access('administer big blue button')) ||
       $user->uid == $node->uid && user_access('moderate own meetings'))) {
     return TRUE;
   }
@@ -186,7 +186,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
     );
     $form['bbb']['bbb_content_type_usage'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Treat this node type as conference'),
+      '#title' => t('Treat this node type as meeting'),
       '#default_value' => variable_get('bbb_content_type_usage_' . $form['#node_type']->type, FALSE),
     );
     $form['bbb']['bbb_content_type_show_links'] = array(
@@ -209,9 +209,9 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
     }
 
     $form['bbb'] = array(
-      '#title' => t('Conference settings'),
+      '#title' => t('Meeting settings'),
       '#type' => 'fieldset',
-      '#description' => t("The following settings maybe changed until the conference first starts."),
+      '#description' => t("The following settings maybe changed until the meeting first starts."),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#tree' => TRUE,
@@ -237,7 +237,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'textfield',
       '#default_value' => $meeting->moderatorPW,
       '#maxlength' => 32,
-      '#description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions (i.e. ending a meeting). This is optional, and if not supplied, BBB will assign a random password.'),
+      '#description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions (i.e. ending a meeting).'),
       '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['attendeePW'] = array(
@@ -245,7 +245,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'textfield',
       '#default_value' => $meeting->attendeePW,
       '#maxlength' => 32,
-      '#description' => t('The password that will be required for attendees to join the meeting. This is optional, and if not supplied, BBB will assign a random password.'),
+      '#description' => t('The password that will be required for attendees to join the meeting.'),
       '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['logoutURL'] = array(
@@ -253,7 +253,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'textfield',
       '#default_value' => $meeting->logoutURL,
       '#maxlength' => 255,
-      '#description' => t('The URL that the BigBlueButton client will go to after users click the OK button on the <em>You have been logged out message</em>.'),
+      '#description' => t('The URL that the Big Blue Button client will go to after users click the OK button on the <em>You have been logged out message</em>.'),
       '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
     );
   }
@@ -324,14 +324,14 @@ function bbb_link($type, $object, $teaser = FALSE) {
     if (!$teaser && $show) {
 
       $meeting = bbb_get_meeting($object->nid);
-      if ((user_access('moderate meetings') || user_access('administer bigbluebutton')) ||
+      if ((user_access('moderate meetings') || user_access('administer big blue button')) ||
           $user->uid == $node->uid && user_access('moderate own meetings')) {
         $links['bbb_meeting_join_moderator'] = array(
           'title' => $meeting->is_running ? t('Join meeting as moderator') : t('Start meeting'),
           'href' => "node/$object->nid/meeting/moderate",
         );
       }
-      if (user_access('attend meetings') || user_access('administer bigbluebutton')) {
+      if (user_access('attend meetings') || user_access('administer big blue button')) {
         $links['bbb_meeting_join_attendee'] = array(
           'title' => t('Join meeting'),
           'href' => "node/$object->nid/meeting/attend",
@@ -425,8 +425,8 @@ function bbb_get_meeting($nid, $account = NULL) {
         ),
       );
       // Allow alteration for e.g. access control
-      // Just implement hook_bigbluebutton_meeting_alter(&$data) {} in your module
-      drupal_alter('bigbluebutton_meeting', &$meeting);
+      // Just implement hook_bbb_meeting_alter(&$data) {} in your module
+      drupal_alter('bbb_meeting', &$meeting);
       // Static cache
       $meetings[$nid] = $meeting;
     }
@@ -448,6 +448,7 @@ function bbb_update_meeting($node, $params = array()) {
     'welcome' => t('Welcome to @title', array('@title' => $node->title)),
     'dialNumber' => '',
     'logoutURL' => url('node/' . $node->nid, array('absolute' => TRUE)),
+    'voiceBridge' => 70000 + rand(0, 9999),
     'created' => time(),
   );
   return drupal_write_record('bbb_meetings', $params, 'nid');
@@ -466,6 +467,7 @@ function bbb_create_meeting($node, $params = array()) {
     'welcome' => t('Welcome to @title', array('@title' => $node->title)),
     'dialNumber' => '',
     'logoutURL' => url('node/' . $node->nid, array('absolute' => TRUE)),
+    'voiceBridge' => 70000 + rand(0, 9999),
   );
   if ($data = bbb_api_create($params)) {
     return $data;
@@ -487,6 +489,7 @@ function bbb_store_meeting($node, $params = array()) {
     'welcome' => t('Welcome to @title', array('@title' => $node->title)),
     'dialNumber' => '',
     'logoutURL' => url('node/' . $node->nid, array('absolute' => TRUE)),
+    'voiceBridge' => 70000 + rand(0, 9999),
     'created' => time(),
   );
   return drupal_write_record('bbb_meetings', $params);
@@ -538,7 +541,7 @@ function bbb_status($node) {
 }
 
 /**
- * Redirect to bigbluebutton instance; Menu callback
+ * Redirect to big blue button instance; Menu callback
  *
  * @param OBJECT $node
  *   A Drupal node object
@@ -654,10 +657,10 @@ function theme_bbb_block_meeting($meeting) {
   if ($meeting->dialNumber) {
     $output .= '<div class="dial-number">' . t('Phone: @number', array('@number' => $meeting->dialNumber)) . '</div>';
   }
-  if (user_access('moderate meetings') || user_access('administer bigbluebutton')) {
+  if (user_access('moderate meetings') || user_access('administer big blue button')) {
     $output .= '<div class="bbb-join-moderator">' . l($meeting->is_running ? t('Join meeting as moderator') : t('Start meeting'), 'node/' . $meeting->nid . '/meeting/moderate') . '</div>';
   }
-  if (user_access('attend meetings') || user_access('administer bigbluebutton')) {
+  if (user_access('attend meetings') || user_access('administer big blue button')) {
     $output .= '<div class="bbb-join-attendee">' . l('Join meeting', 'node/' . $meeting->nid . '/meeting/attend') . '</div>';
   }
   $output .= '</div>';

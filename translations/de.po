@@ -60,7 +60,7 @@ msgstr "Die folgenden Einstellungen können geändert werden, bis das Meeting da
 
 #: bbb.module:220 includes/bbb_views.views.inc:99
 msgid "Welcome message"
-msgstr "Wollkommensnachricht"
+msgstr "Willkommensnachricht"
 
 #: bbb.module:224
 msgid "A welcome message that gets displayed on the chat window when the participant joins. You can include keywords (%%CONFNAME%%, %%DIALNUM%%, %%CONFNUM%%) which will be substituted automatically."

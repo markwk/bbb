@@ -610,12 +610,12 @@ function bbb_redirect($node, $mode = 'attend') {
     case 'attend':
       // Get redirect URL
       $url = parse_url($meeting->url['join_' . $mode]);
-      drupal_goto($url['scheme'] . '://' . $url['host'] . $url['path'], $url['query']);
+      drupal_goto($url['scheme'] . '://' . $url['host']. (isset($url['port']) ? ':'.$url['port'] : '' ) . $url['path'], $url['query']);
       break;
     case 'moderate':
       // Get redirect URL
       $url = parse_url($meeting->url['join_' . $mode]);
-      drupal_goto($url['scheme'] . '://' . $url['host'] . $url['path'], $url['query']);
+      drupal_goto($url['scheme'] . '://' . $url['host'] . (isset($url['port']) ? ':'.$url['port'] : '' ) . $url['path'], $url['query']);
       break;
   }
 }

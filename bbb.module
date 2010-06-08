@@ -12,19 +12,20 @@
 
 // Security Salt
 // see /var/lib/tomcat6/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties
-define('BIGBLUEBUTTON_SECURITY_SALT', variable_get('bbb_security_salt', '76b71974198f26ecc5a594eddddf49d1'));
+define('BBB_API_SECURITY_SALT', variable_get('bbb_security_salt', '76b71974198f26ecc5a594eddddf49d1'));
 
 // Define API URLs
-define('BIGBLUEBUTTON_BASE_URL', variable_get('bbb_base_url', 'http://195.34.183.202/bigbluebutton/'));
-define('BIGBLUEBUTTON_CREATE_URL', 'api/create');
-define('BIGBLUEBUTTON_JOIN_URL', 'api/join');
-define('BIGBLUEBUTTON_END_MEETING_URL', 'api/endMeeting');
-define('BIGBLUEBUTTON_GET_MEETING_INFO_URL', 'api/getMeetingInfo');
-define('BIGBLUEBUTTON_IS_MEETING_RUNNING_URL', 'api/isMeetingRunning');
+define('BBB_API_BASE_URL', variable_get('bbb_base_url', 'http://YOUR_BIGBLUEBUTTON_SERVER.TLD/bigbluebutton/api/'));
+define('BBB_API_CREATE', 'create');
+define('BBB_API_JOIN', 'join');
+define('BBB_API_END_MEETING', 'end');
+define('BBB_API_GET_MEETING_INFO', 'getMeetingInfo');
+define('BBB_API_IS_MEETING_RUNNING', 'isMeetingRunning');
+define('BBB_API_GET_MEETINGS', 'getMeetings');
 // Define default settings
-define('BIGBLUEBUTTON_DISPLAY_MODE', variable_get('bbb_display_mode', 'inline'));
-define('BIGBLUEBUTTON_DISPLAY_HEIGHT', variable_get('bbb_display_height', '580px'));
-define('BIGBLUEBUTTON_DISPLAY_WIDTH', variable_get('bbb_display_width', '100%'));
+define('BBB_DISPLAY_MODE', variable_get('bbb_display_mode', 'inline'));
+define('BBB_DISPLAY_HEIGHT', variable_get('bbb_display_height', '580px'));
+define('BBB_DISPLAY_WIDTH', variable_get('bbb_display_width', '100%'));
 
 include_once(drupal_get_path('modules', 'bbb') . 'includes/api.bbb.inc');
 
@@ -222,7 +223,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => $meeting->welcome,
       '#maxlength' => 255,
       '#description' => t('A welcome message that gets displayed on the chat window when the participant joins. You can include keywords (%%CONFNAME%%, %%DIALNUM%%, %%CONFNUM%%) which will be substituted automatically.'),
-      '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
+      '#attributes' => $meeting->meetingID ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['dialNumber'] = array(
       '#title' => t('Dial number'),
@@ -230,7 +231,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => $meeting->dialNumber,
       '#maxlength' => 32,
       '#description' => t('The dial access number that participants can call in using regular phone.'),
-      '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
+      '#attributes' => $meeting->meetingID ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['moderatorPW'] = array(
       '#title' => t('Moderator password'),
@@ -238,7 +239,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => $meeting->moderatorPW,
       '#maxlength' => 32,
       '#description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions (i.e. ending a meeting).'),
-      '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
+      '#attributes' => $meeting->meetingID ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['attendeePW'] = array(
       '#title' => t('Attendee password'),
@@ -246,7 +247,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => $meeting->attendeePW,
       '#maxlength' => 32,
       '#description' => t('The password that will be required for attendees to join the meeting.'),
-      '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
+      '#attributes' => $meeting->meetingID ? array('disabled' => 'disabled') : array(),
     );
     $form['bbb']['logoutURL'] = array(
       '#title' => t('Logout URL'),
@@ -254,7 +255,7 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => $meeting->logoutURL,
       '#maxlength' => 255,
       '#description' => t('The URL that the Big Blue Button client will go to after users click the OK button on the <em>You have been logged out message</em>.'),
-      '#attributes' => $meeting->meetingToken ? array('disabled' => 'disabled') : array(),
+      '#attributes' => $meeting->meetingID ? array('disabled' => 'disabled') : array(),
     );
   }
 }
@@ -441,7 +442,6 @@ function bbb_update_meeting($node, $params = array()) {
   $params += array(
     'nid' => $node->nid,
     'name' => check_plain($node->title),
-    'meetingToken' => '',
     'meetingID' => $node->nid,
     'attendeePW' => user_password(),
     'moderatorPW' => user_password(),
@@ -460,7 +460,6 @@ function bbb_update_meeting($node, $params = array()) {
 function bbb_create_meeting($node, $params = array()) {
   $params += array(
     'name' => check_plain($node->title),
-    'meetingToken' => '',
     'meetingID' => $node->nid,
     'attendeePW' => user_password(),
     'moderatorPW' => user_password(),
@@ -482,7 +481,6 @@ function bbb_store_meeting($node, $params = array()) {
   $params += array(
     'nid' => $node->nid,
     'name' => check_plain($node->title),
-    'meetingToken' => '',
     'meetingID' => $node->nid,
     'attendeePW' => user_password(),
     'moderatorPW' => user_password(),
@@ -575,7 +573,7 @@ function bbb_join($node, $mode) {
       break;
     case 'attend':
       if ($meeting->is_running) {
-        if (BIGBLUEBUTTON_DISPLAY_MODE == 'blank') {
+        if (BBB_DISPLAY_MODE == 'blank') {
           bbb_redirect($node, $mode);
         }
       }
@@ -585,20 +583,20 @@ function bbb_join($node, $mode) {
       break;
     case 'moderate':
       // Implicitly create meeting
-      if (empty($meeting->meetingToken)) {
+      if (empty($meeting->meetingID)) {
         if ($data = bbb_create_meeting($node, (array) $meeting)) {
           // Update local data
           bbb_update_meeting($node, array_merge((array) $meeting, (array) $data));
         }
       }
 
-      if (BIGBLUEBUTTON_DISPLAY_MODE == 'blank') {
+      if (BBB_DISPLAY_MODE == 'blank') {
         bbb_redirect($node, $mode);
       }
       break;
   }
 
-  return theme('bbb_meeting', $meeting, $mode, BIGBLUEBUTTON_DISPLAY_HEIGHT, BIGBLUEBUTTON_DISPLAY_WIDTH);
+  return theme('bbb_meeting', $meeting, $mode, BBB_DISPLAY_HEIGHT, BBB_DISPLAY_WIDTH);
 }
 
 /**

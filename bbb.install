@@ -133,3 +133,25 @@ function bbb_uninstall() {
   // Remove tables
   drupal_uninstall_schema('bbb');
 }
+
+/**
+ * Implement hook_update_N().
+ */
+function bbb_update_6100() {
+  if ($bbb_base_url = variable_get('bbb_base_url', FALSE)) {
+    $new_bbb_base_url = $bbb_base_url . 'api/';
+    variable_set('bbb_base_url', $new_bbb_base_url);
+    return array(
+      array(
+        'success' => TRUE,
+        'query' => t('The API url has been updated from %url to %new_url successfully.', array('%url' => $bbb_base_url, '%new_url' => $new_bbb_base_url)),
+      )
+    );
+  }
+  return array(
+    array(
+      'success' => TRUE,
+      'query' => t('No need to update'),
+    )
+  );
+}

@@ -22,12 +22,6 @@ function bbb_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'meetingToken' => array(
-        'description' => t('TODO: please describe this field!'),
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => TRUE,
-      ),
       'name' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
@@ -70,12 +64,6 @@ function bbb_schema() {
         'length' => '255',
         'not null' => TRUE,
       ),
-      'voicebridge' => array(
-        'description' => t('TODO: please describe this field!'),
-        'type' => 'varchar',
-        'length' => '32',
-        'not null' => TRUE,
-      ),
       'created' => array(
         'description' => t('TODO: please describe this field!'),
         'type' => 'int',
@@ -101,6 +89,11 @@ function bbb_schema() {
         'description' => t('TODO: please describe this field!'),
         'type' => 'varchar',
         'length' => '32',
+        'not null' => TRUE,
+      ),
+      'initialized' => array(
+        'description' => t('TODO: please describe this field!'),
+        'type' => 'int',
         'not null' => TRUE,
       ),
       'created' => array(
@@ -138,20 +131,30 @@ function bbb_uninstall() {
  * Implement hook_update_N().
  */
 function bbb_update_6100() {
+  $ret = array();
+
+  // Update database schema
+  db_drop_field($ret, 'bbb_meetings', 'meetingToken');
+  db_drop_field($ret, 'bbb_meetings', 'voiceBridge');
+  db_add_field($ret, 'bbb_meetings', 'initialized', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'description' => t('TODO: please describe this field!'),
+  ));
+
+  // Update API url
   if ($bbb_base_url = variable_get('bbb_base_url', FALSE)) {
     $new_bbb_base_url = $bbb_base_url . 'api/';
     variable_set('bbb_base_url', $new_bbb_base_url);
-    return array(
-      array(
-        'success' => TRUE,
-        'query' => t('The API url has been updated from %url to %new_url successfully.', array('%url' => $bbb_base_url, '%new_url' => $new_bbb_base_url)),
+    $ret[] = array(
+      'success' => TRUE,
+      'query' => t('The API url has been updated from %url to %new_url successfully.',
+        array(
+          '%url' => $bbb_base_url,
+          '%new_url' => $new_bbb_base_url
+        )
       )
     );
   }
-  return array(
-    array(
-      'success' => TRUE,
-      'query' => t('No need to update'),
-    )
-  );
+  return $ret;
 }

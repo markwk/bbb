@@ -443,7 +443,7 @@ function bbb_is_meeting_type($type) {
 /**
  * Return a meeting object
  */
-function bbb_get_meeting($nid, $account = NULL) {
+function bbb_get_meeting($nid, $account = NULL, $cached = TRUE) {
   // Simple static cache
   static $meetings = array();
 
@@ -452,7 +452,7 @@ function bbb_get_meeting($nid, $account = NULL) {
     $account = $user;
   }
 
-  if (!isset($meetings[$nid])) {
+  if (!isset($meetings[$nid]) || !$cached) {
     $meeting = new stdClass();
     $meeting = db_fetch_object(db_query("SELECT * FROM {bbb_meetings} WHERE nid = %d", $nid));
 
@@ -657,7 +657,7 @@ function bbb_join($node, $mode) {
  * Redirect to meeting
  */
 function bbb_redirect($node, $mode = 'attend') {
-  $meeting = bbb_get_meeting($node->nid);
+  $meeting = bbb_get_meeting($node->nid, NULL, FALSE);
   switch ($mode) {
     case 'attend':
       // Get redirect URL

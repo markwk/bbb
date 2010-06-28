@@ -32,7 +32,17 @@ define('BBB_DISPLAY_WIDTH',  variable_get('bbb_display_width', '100%'));
 
 include_once(drupal_get_path('modules', 'bbb') . 'includes/api.bbb.inc');
 
-/* Drupal Core Hooks */
+/* Drupal Hooks */
+
+/**
+ * Implementation of hook_views_api().
+ */
+function bbb_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'bbb') . '/includes',
+  );
+}
 
 /**
  * Implement HOOK_perm().

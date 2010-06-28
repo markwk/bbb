@@ -26,11 +26,6 @@ function bbb_settings() {
     '#type' => 'fieldset',
     '#description' => t('Goto !content_types_page to choose which node types should be treated as meetings it is possible to provide default settings there too. Also there are some Blocks available, that may be activated on the !block_page.', array('!content_types_page' => l('Content types administration page' , 'admin/content/types'), '!block_page' => l('Blocks administration page' , 'admin/build/block'))),
   );
-  $form['bbb_hosted'] = array(
-    '#title' => 'Hosted Service',
-    '#type' => 'fieldset',
-    '#description' => t('Adjust the default server settings. Read more about Big Blue Button on !home. See the documentation for !documentation. Goto !url to choose which node types should be treated as meetings.', array('!home' => l(t('BigBlueButton.org'), 'http://bigbluebutton.org/'), '!documentation' => l(t('installation instructions'), 'http://code.google.com/p/bigbluebutton/'), '!url' => l('Content types administration page' , 'admin/content/types'))),
-  );
   $form['bbb_server'] = array(
     '#title' => 'Server settings',
     '#type' => 'fieldset',

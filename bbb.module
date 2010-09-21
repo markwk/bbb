@@ -21,6 +21,8 @@
  *     to adjust the audio/video settings
  */
 
+// API version
+define('BBB_API_VERSION', variable_get('bbb_api_version', NULL));
 // Security Salt
 // see /var/lib/tomcat6/webapps/bigbluebutton/WEB-INF/classes/bigbluebutton.properties
 define('BBB_API_SECURITY_SALT', variable_get('bbb_security_salt', '76b71974198f26ecc5a594eddddf49d1'));
@@ -30,7 +32,9 @@ define('BBB_DISPLAY_MODE',   variable_get('bbb_display_mode', 'inline'));
 define('BBB_DISPLAY_HEIGHT', variable_get('bbb_display_height', '580px'));
 define('BBB_DISPLAY_WIDTH',  variable_get('bbb_display_width', '100%'));
 
-include_once(drupal_get_path('modules', 'bbb') . 'includes/api.bbb.inc');
+if (BBB_API_VERSION) {
+  include_once(drupal_get_path('modules', 'bbb') . 'includes/api-' . BBB_API_VERSION . '.bbb.inc');
+}
 
 /* Drupal Hooks */
 
@@ -100,7 +104,7 @@ function bbb_menu() {
     'access callback' => 'bbb_access_attendee',
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/api.bbb.inc',
+    'file' => 'includes/api-' . BBB_API_VERSION . '.bbb.inc',
   );
   $items['admin/settings/bigbluebutton'] = array(
     'title' => 'Big Blue Button meetings',
@@ -200,63 +204,69 @@ function bbb_form_alter(&$form, &$form_state, $form_id) {
 
   // Node type settings form
   if ($form_id == 'node_type_form') {
+    $bbb_api_version = variable_get('bbb_api_version', NULL);
     $form['bbb'] = array(
       '#title' => t('Big Blue Button settings'),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-    $form['bbb']['bbb_content_type'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Treat this node type as meeting'),
-      '#default_value' => variable_get('bbb_content_type_' . $form['#node_type']->type, FALSE),
-    );
-    $form['bbb']['bbb_content_type_show_links'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Show links to join / start a meeting beneath the node'),
-      '#default_value' => variable_get('bbb_content_type_show_links_' . $form['#node_type']->type, FALSE),
-    );
-    $form['bbb']['bbb_content_type_show_status'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display meeting status on node'),
-      '#default_value' => variable_get('bbb_content_type_show_status_' . $form['#node_type']->type, FALSE),
-    );
-    
-    $form['bbb']['bbb_content_type_welcome'] = array(
-      '#title' => t('Welcome message'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('bbb_content_type_welcome_' . $form['#node_type']->type, ''),
-      '#maxlength' => 255,
-      '#description' => t('A welcome message that gets displayed on the chat window when the participant joins. You can include keywords (%%CONFNAME%%, %%DIALNUM%%, %%CONFNUM%%) which will be substituted automatically.'),
-    );
-    $form['bbb']['bbb_content_type_dialNumber'] = array(
-      '#title' => t('Dial number'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('bbb_content_type_dialNumber_' . $form['#node_type']->type, ''),
-      '#maxlength' => 32,
-      '#description' => t('The dial access number that participants can call in using regular phone.'),
-    );
-    $form['bbb']['bbb_content_type_moderatorPW'] = array(
-      '#title' => t('Moderator password'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('bbb_content_type_moderatorPW_' . $form['#node_type']->type, ''),
-      '#maxlength' => 32,
-      '#description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions (i.e. ending a meeting).'),
-    );
-    $form['bbb']['bbb_content_type_attendeePW'] = array(
-      '#title' => t('Attendee password'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('bbb_content_type_attendeePW_' . $form['#node_type']->type, ''),
-      '#maxlength' => 32,
-      '#description' => t('The password that will be required for attendees to join the meeting.'),
-    );
-    $form['bbb']['bbb_content_type_logoutURL'] = array(
-      '#title' => t('Logout URL'),
-      '#type' => 'textfield',
-      '#default_value' => variable_get('bbb_content_type_logoutURL_' . $form['#node_type']->type, ''),
-      '#maxlength' => 255,
-      '#description' => t('The URL that the Big Blue Button client will go to after users click the OK button on the <em>You have been logged out message</em>.'),
-    );
+    if (!is_numeric($bbb_api_version)) {
+      $form['bbb']['#value'] = '<p>' . t('Please go to the !page and setup your Big Blue button server.', array('!page' => l(t('administration page'), 'admin/settings/bigbluebutton'))) . '</p>';
+    }
+    else {
+      $form['bbb']['bbb_content_type'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Treat this node type as meeting'),
+        '#default_value' => variable_get('bbb_content_type_' . $form['#node_type']->type, FALSE),
+      );
+      $form['bbb']['bbb_content_type_show_links'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Show links to join / start a meeting beneath the node'),
+        '#default_value' => variable_get('bbb_content_type_show_links_' . $form['#node_type']->type, FALSE),
+      );
+      $form['bbb']['bbb_content_type_show_status'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Display meeting status on node'),
+        '#default_value' => variable_get('bbb_content_type_show_status_' . $form['#node_type']->type, FALSE),
+      );
+      
+      $form['bbb']['bbb_content_type_welcome'] = array(
+        '#title' => t('Welcome message'),
+        '#type' => 'textfield',
+        '#default_value' => variable_get('bbb_content_type_welcome_' . $form['#node_type']->type, ''),
+        '#maxlength' => 255,
+        '#description' => t('A welcome message that gets displayed on the chat window when the participant joins. You can include keywords (%%CONFNAME%%, %%DIALNUM%%, %%CONFNUM%%) which will be substituted automatically.'),
+      );
+      $form['bbb']['bbb_content_type_dialNumber'] = array(
+        '#title' => t('Dial number'),
+        '#type' => 'textfield',
+        '#default_value' => variable_get('bbb_content_type_dialNumber_' . $form['#node_type']->type, ''),
+        '#maxlength' => 32,
+        '#description' => t('The dial access number that participants can call in using regular phone.'),
+      );
+      $form['bbb']['bbb_content_type_moderatorPW'] = array(
+        '#title' => t('Moderator password'),
+        '#type' => 'textfield',
+        '#default_value' => variable_get('bbb_content_type_moderatorPW_' . $form['#node_type']->type, ''),
+        '#maxlength' => 32,
+        '#description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions (i.e. ending a meeting).'),
+      );
+      $form['bbb']['bbb_content_type_attendeePW'] = array(
+        '#title' => t('Attendee password'),
+        '#type' => 'textfield',
+        '#default_value' => variable_get('bbb_content_type_attendeePW_' . $form['#node_type']->type, ''),
+        '#maxlength' => 32,
+        '#description' => t('The password that will be required for attendees to join the meeting.'),
+      );
+      $form['bbb']['bbb_content_type_logoutURL'] = array(
+        '#title' => t('Logout URL'),
+        '#type' => 'textfield',
+        '#default_value' => variable_get('bbb_content_type_logoutURL_' . $form['#node_type']->type, ''),
+        '#maxlength' => 255,
+        '#description' => t('The URL that the Big Blue Button client will go to after users click the OK button on the <em>You have been logged out message</em>.'),
+      );
+    }
   }
 
   // Node edit form
@@ -503,21 +513,22 @@ function bbb_init_meeting($node = NULL, $params = array()) {
   $moderatorPW = variable_get('bbb_content_type_moderatorPW_' . $node->type, '');
   $attendeePW  = variable_get('bbb_content_type_attendeePW_'  . $node->type, '');
   $logoutURL   = variable_get('bbb_content_type_logoutURL_'   . $node->type, '');
-  $params += array(
+  $settings = array(
     'nid'          => $node->nid,
     'name'         => $node->title,
     'meetingID'    => bbb_create_meeting_id($node->nid),
-    'attendeePW'   => $attendeePW  ? $attendeePW  : user_password(),
-    'moderatorPW'  => $moderatorPW ? $moderatorPW : user_password(),
-    'welcome'      => $welcome     ? $welcome     : t('Welcome to @title', array('@title' => $node->title)),
+    'attendeePW'   => !empty($attendeePW) ? $attendeePW : user_password(),
+    'moderatorPW'  => !empty($moderatorPW) ? $moderatorPW : user_password(),
+    'welcome'      => !empty($welcome) ? $welcome : t('Welcome to @title', array('@title' => $node->title)),
     'dialNumber'   => $dialNumber  ? $dialNumber  : NULL,
-    'logoutURL'    => $logoutURL   ? $logoutURL   : url('node/' . $node->nid, array('absolute' => TRUE)),
-    // TODO: This is limited to 10000 voice bridges and may
+    // TODO: This is limited to 90000 voice bridges and may
     // collide sooner, as rand() may return x twice in a row
-    //'voiceBridge'  => 70000 + rand(0, 9999), // removed in v0.64
+    'voiceBridge'  => rand(10000, 99999),
+    'logoutURL'    => !empty($logoutURL) ? $logoutURL : url('node/' . $node->nid), //TODO: make absolute, as soon as supported
     'initialized'  => 0,
     'created'      => time(),
   );
+  $params = array_merge($params, $settings);
   return $params;
 }
 

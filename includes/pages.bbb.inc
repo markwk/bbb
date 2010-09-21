@@ -12,11 +12,9 @@
 
 /**
  * Administrative settings; Menu callback
- * TODO: Per node type settings?
  */
 function bbb_settings() {
   if ($_POST['op'] == t('Test Connection')) {
-    //TODO: Use batch api to test the whole set of bbb api functions
     bbb_test_connection($_POST['bbb_base_url'], $_POST['bbb_security_salt']);
   }
 
@@ -30,6 +28,10 @@ function bbb_settings() {
     '#title' => 'Server settings',
     '#type' => 'fieldset',
     '#description' => t('Adjust the default server settings. Read more about Big Blue Button on !home. See the documentation for !documentation. Goto !url to choose which node types should be treated as meetings.', array('!home' => l(t('BigBlueButton.org'), 'http://bigbluebutton.org/'), '!documentation' => l(t('installation instructions'), 'http://code.google.com/p/bigbluebutton/'), '!url' => l('Content types administration page' , 'admin/content/types'))),
+  );
+  $form['bbb_server']['bbb_api_version'] = array(
+    '#value' => t('<strong>Detected API version:</strong> !version', array('!version' => variable_get('bbb_api_version', t('none')))),
+    '#attributes' => array('readonly' => 'readonly'),
   );
   $form['bbb_server']['bbb_base_url'] = array(
     '#title' => t('Base URL'),
@@ -83,24 +85,37 @@ function bbb_settings() {
 /**
  * Test conection to Big Blue Button
  */
-function bbb_test_connection($base_url, $security_salt) {
-  // Generate a random value
-  $params = array('random' => user_password());
-  // Generate query with form data
-  $query_string = bbb_api_generate_querystring(BBB_API_GET_MEETINGS, $params, FALSE);
-  $query_string = $query_string . '&checksum=' . sha1($query_string . $security_salt);
-  $request = $base_url . BBB_API_GET_MEETINGS . '?' . $query_string;
+function bbb_test_connection($request, $security_salt) {
+  if (!function_exists('bbb_api_debug')) {
+    include_once('api.bbb.inc');
+  }
+
   bbb_api_debug($request);
   $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
   bbb_api_debug($response);
 
-  if ($response->returncode == 'SUCCESS') {
-    drupal_set_message(t('The connection has been established succesfully. Please save your configuration now.'));
+  // Check for API version >= 0.7
+  if ($response->returncode == 'SUCCESS' && is_numeric($response->version)) {
+    $version = $response->version;
+    variable_set('bbb_api_version', $version);
   }
+  // Check for API version <= 0.64
+  else if ($response->returncode == 'FAILED' &&
+           $response->messageKey == 'noActionSpecified' &&
+           $response->message    == 'You did not specify an API action.') {
+    // Assumeing API version 0.64
+    $version = 0.64;
+    variable_set('bbb_api_version', $version);
+  }
+  // Could not determine API version
   else {
     drupal_set_message(t('The connection could not be established correctly. The server response was: %message.', array('%message' => ($response->message ? $response->message : t('No response')))), 'error');
     watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
+  // Rebuild menu
+  menu_rebuild();
+  drupal_set_message(t('The connection has been established succesfully, the API version has been determined as v@version. Please save your configuration now.', array('@version' => $version)));
+  return $version;
 }

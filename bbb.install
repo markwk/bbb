@@ -15,57 +15,62 @@
  */
 function bbb_schema() {
   $schema['bbb_meetings'] = array(
-    'description' => t('TODO: please describe this table!'),
+    'description' => t('The meeting table'),
     'fields' => array(
       'nid' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The primary node id'),
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('A name for the meeting'),
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'meetingID' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('A meeting ID that can be used to identify this meeting by the third party application'),
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'attendeePW' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The password that will be required for attendees to join the meeting'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
       'moderatorPW' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The password that will be required for moderators to join the meeting or for certain administrative actions'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
       'welcome' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('A welcome message that gets displayed on the chat window when the participant joins'),
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'dialNumber' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The dial access number that participants can call in using regular phone'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
+      'voiceBridge' => array(
+        'description' => t('Voice conference number that participants enter to join the voice conference.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'logoutURL' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The URL that the BigBlueButton client will go to after users logged out'),
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'created' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('Meeting created timestamp'),
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -73,31 +78,31 @@ function bbb_schema() {
     'primary key' => array('nid'),
   );
   $schema['bbb_stats'] = array(
-    'description' => t('TODO: please describe this table!'),
+    'description' => t('Meeting statistics table'),
     'fields' => array(
       'nid' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The primary node id'),
         'type' => 'int',
         'not null' => TRUE,
       ),
       'uid' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The primary user id'),
         'type' => 'int',
         'not null' => TRUE,
       ),
       'mode' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('The user role in the meeting'),
         'type' => 'varchar',
         'length' => '32',
         'not null' => TRUE,
       ),
       'initialized' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('Initialization timestamp'),
         'type' => 'int',
         'not null' => TRUE,
       ),
       'created' => array(
-        'description' => t('TODO: please describe this field!'),
+        'description' => t('Statistics created timestamp'),
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -133,7 +138,7 @@ function bbb_uninstall() {
 function bbb_update_6100() {
   $ret = array();
 
-  // Update database schema
+  // Update database schema API v0.64
   db_drop_field($ret, 'bbb_meetings', 'meetingToken');
   db_drop_field($ret, 'bbb_meetings', 'voiceBridge');
   db_add_field($ret, 'bbb_meetings', 'initialized', array(
@@ -156,5 +161,36 @@ function bbb_update_6100() {
       )
     );
   }
+  return $ret;
+}
+
+/**
+ * Implement hook_update_N().
+ */
+function bbb_update_6101() {
+  $ret = array();
+
+  // Update database schema API v0.7
+  db_add_field($ret, 'bbb_meetings', 'voiceBridge', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'description' => t('Voice conference number that participants enter to join the voice conference.'),
+  ));
+  return $ret;
+}
+
+/**
+ * Implement hook_update_N().
+ */
+function bbb_update_6102() {
+  $ret = array();
+  include_once(drupal_get_path('modules', 'bbb') . 'includes/pages.bbb.inc');
+  $request = variable_get('bbb_base_url', '');
+  $security_salt = variable_get('bbb_security_salt', '');
+  $version = bbb_test_connection($request, $security_salt);
+  $ret[] = array(
+    'success' => is_numeric($version) ? TRUE : FALSE,
+    'query' => t('Big Blue Button API version set to @version', array('@version' => ($version ? $version : t('none')))),
+  );
   return $ret;
 }

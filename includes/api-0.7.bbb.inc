@@ -23,9 +23,9 @@ define('BBB_API_BASE_URL', variable_get('bbb_base_url', 'http://YOUR_BIGBLUEBUTT
 // Define API calls
 define('BBB_API_CREATE',             'create');
 define('BBB_API_JOIN',               'join');
+define('BBB_API_IS_MEETING_RUNNING', 'isMeetingRunning');
 define('BBB_API_END_MEETING',        'end');
 define('BBB_API_GET_MEETING_INFO',   'getMeetingInfo');
-define('BBB_API_IS_MEETING_RUNNING', 'isMeetingRunning');
 define('BBB_API_GET_MEETINGS',       'getMeetings');
 
 /**
@@ -95,12 +95,13 @@ function bbb_api_create($params = array()) {
  *   Associative array of additional url parameters. Components:
  *   - fullName: STRING (REQUIRED) The full name that is to be used to identify
  *     this user to other conference attendees.
- *   - meetingID: STRING (REQUIRED) If you specified a meeting ID when calling create,
- *     then you can use either the generated meeting token or your specified
- *     meeting ID to find meetings. This parameter takes your meeting ID.
- *   - password: STRING (REQUIRED) The password that this attendee is using. If the
- *     moderator password is supplied, he will be given moderator status (and
- *     the same for attendee password, etc)
+ *   - meetingID: STRING (REQUIRED) If you specified a meeting ID when calling
+ *     create, then you can use either the generated meeting token or your
+ *     specified meeting ID to find meetings. This parameter takes your meeting
+ *     ID.
+ *   - password: STRING (REQUIRED) The password that this attendee is using. If
+ *     the moderator password is supplied, he will be given moderator status
+ *     (and the same for attendee password, etc)
  *   - userID: STRING An identifier for this user that will help your
  *     application to identify which person this is. This user ID will be
  *     returned for this user in the getMeetingInfo API call so that you can
@@ -220,8 +221,8 @@ function bbb_api_getMeetings($params) {
  */
 function bbb_api_generate_querystring($call, $params = array()) {
   $query = array();
-  // Create the entire query string for your API call without the checksum parameter
-  // URL encoding the parameters
+  // Create the entire query string for your API call without the checksum
+  // parameter URL encoding the parameters
   foreach ($params as $key => $value) {
     $query[] = $key . '=' . drupal_urlencode(trim($value));
   }

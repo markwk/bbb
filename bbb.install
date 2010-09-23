@@ -69,6 +69,11 @@ function bbb_schema() {
         'length' => '255',
         'not null' => TRUE,
       ),
+      'initialized' => array(
+        'description' => t('Initialization timestamp'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'created' => array(
         'description' => t('Meeting created timestamp'),
         'type' => 'int',
@@ -76,41 +81,6 @@ function bbb_schema() {
       ),
     ),
     'primary key' => array('nid'),
-  );
-  $schema['bbb_stats'] = array(
-    'description' => t('Meeting statistics table'),
-    'fields' => array(
-      'nid' => array(
-        'description' => t('The primary node id'),
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'uid' => array(
-        'description' => t('The primary user id'),
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'mode' => array(
-        'description' => t('The user role in the meeting'),
-        'type' => 'varchar',
-        'length' => '32',
-        'not null' => TRUE,
-      ),
-      'initialized' => array(
-        'description' => t('Initialization timestamp'),
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'created' => array(
-        'description' => t('Statistics created timestamp'),
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'nid' => array('nid'),
-      'uid' => array('uid'),
-    ),
   );
   return $schema;
 }
@@ -184,6 +154,9 @@ function bbb_update_6101() {
  */
 function bbb_update_6102() {
   $ret = array();
+
+  db_drop_table($ret, 'bbb_stats');
+
   include_once(drupal_get_path('modules', 'bbb') . 'includes/pages.bbb.inc');
   $request = variable_get('bbb_base_url', '');
   $security_salt = variable_get('bbb_security_salt', '');
@@ -191,6 +164,12 @@ function bbb_update_6102() {
   $ret[] = array(
     'success' => is_numeric($version) ? TRUE : FALSE,
     'query' => t('Big Blue Button API version set to @version', array('@version' => ($version ? $version : t('none')))),
+  );
+
+  variable_set('bbb_local_tasks', 1);
+  $ret[] = array(
+    'success' => TRUE,
+    'query' => t('The local tasks display can now be disabled on the !page', array('!page' => l(t('administration page'), 'admin/settings/bigbluebutton'))),
   );
   return $ret;
 }

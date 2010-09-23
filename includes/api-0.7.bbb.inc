@@ -168,8 +168,7 @@ function bbb_api_isMeetingRunning($params) {
  */
 function bbb_api_end($params) {
   $query_string = bbb_api_generate_querystring(BBB_API_END_MEETING, $params);
-  $request = BBB_API_BASE_URL . BBB_API_END_MEETING . '?' . $query_string;
-  return bbb_api_execute_query($request);
+  return BBB_API_BASE_URL . BBB_API_END_MEETING . '?' . $query_string;
 }
 
 /**

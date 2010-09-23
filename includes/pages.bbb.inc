@@ -45,6 +45,11 @@ function bbb_settings() {
     '#default_value' => variable_get('bbb_security_salt', BBB_API_SECURITY_SALT),
     '#description' => t('The predefinde security salt. This is a server side configuration option check the Big Blue Button !documentation', array('!documentation' => l(t('documentation'), 'http://code.google.com/p/bigbluebutton/'))),
   );
+  $form['bbb_server']['connection'] = array(
+    '#type' => 'submit',
+    '#executes_submit_callback' => FALSE,
+    '#value' => t('Test Connection'),
+  );
   $form['bbb_client'] = array(
     '#title' => t('Client settings'),
     '#type' => 'fieldset',
@@ -74,12 +79,27 @@ function bbb_settings() {
     '#size' => 4,
     '#description' => '<br />' . t('Give dimensions for inline display, e.g. <em>520px</em> x <em>100%</em>.'),
   );
-  $form['connection'] = array(
-    '#type' => 'submit',
-    '#executes_submit_callback' => FALSE,
-    '#value' => t('Test Connection'),
+  $form['bbb_general'] = array(
+    '#title' => t('General settings'),
+    '#type' => 'fieldset',
   );
+  $form['bbb_general']['bbb_local_tasks'] = array(
+    '#title' => t('Local tasks'),
+    '#type' => 'checkbox',
+    '#options' => array(
+      0 => t('Hide'),
+      1 => t('Show'),
+    ),
+    '#default_value' => variable_get('bbb_local_tasks', 1),
+    '#description' => t('Choose wether to display the local tasks. (Save twice to see the effect)'), // TODO: fix!
+  );
+  $form['#submit'][] = 'bbb_settings_submit';
   return system_settings_form($form);
+}
+
+function bbb_settings_submit() {
+  // Rebuild menu
+  menu_rebuild();
 }
 
 /**
@@ -114,8 +134,6 @@ function bbb_test_connection($request, $security_salt) {
     watchdog('big blue button', '%message', array('%message' => $response->message), WATCHDOG_ERROR);
     return FALSE;
   }
-  // Rebuild menu
-  menu_rebuild();
   drupal_set_message(t('The connection has been established succesfully, the API version has been determined as v@version. Please save your configuration now.', array('@version' => $version)));
   return $version;
 }

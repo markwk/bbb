@@ -1,1 +1,1 @@
-There are development branches for ech version of Drupal core.
+There are development branches for each version of Drupal core.

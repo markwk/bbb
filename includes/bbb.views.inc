@@ -11,25 +11,6 @@
  */
 
 /**
- * Implement hook_views_handlers().
- */
-function bbb_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'bbb_views') . '/includes',
-    ),
-    'handlers' => array(
-      'views_handler_field_bbb_join_attendee' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'views_handler_field_bbb_join_moderator' => array(
-        'parent' => 'views_handler_field',
-      ),
-    ),
-  );
-}
-
-/**
  * Implement hook_views_data().
  */
 function bbb_views_data() {

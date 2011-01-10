@@ -8,7 +8,7 @@
  *
  * @author
  * Stefan Auditor <stefan.auditor@erdfisch.de>
- * 
+ *
  * NOTE: Parameters marked with (NFS) are not yet fully supported. You can pass
  * them in to the controller, but they may not have any actual effect on the
  * conference. This is more a limitation based on support by the actual BBB
@@ -223,7 +223,7 @@ function bbb_api_generate_querystring($call, $params = array()) {
   // Create the entire query string for your API call without the checksum
   // parameter URL encoding the parameters
   foreach ($params as $key => $value) {
-    $query[] = $key . '=' . drupal_urlencode(trim($value));
+    $query[] = $key . '=' . drupal_encode_path(trim($value));
   }
   // Putting it together
   $query_string = implode('&', $query);
@@ -231,14 +231,13 @@ function bbb_api_generate_querystring($call, $params = array()) {
 }
 
 /**
- * 
+ *
  */
 function bbb_api_execute_query($request) {
   bbb_api_debug($request); //debug
   $xml = @simplexml_load_file($request);
   $response = bbb_api_parse_response($xml);
   bbb_api_debug($response); //debug
-
   if ($response->returncode == 'SUCCESS') {
     unset($response->returncode);
     if ($response->running) {
@@ -275,9 +274,7 @@ function bbb_api_parse_response($xml) {
  */
 function bbb_api_debug($var) {
   if (BBB_API_DEBUG) {
-    if (module_exists('devel')) {
-      dsm($var);
-    }
+    debug($var);
     watchdog('big blue button debug', '%message', array('%message' => '<pre>' . print_r($var, 1) . '</pre>'), WATCHDOG_DEBUG);
   }
 }

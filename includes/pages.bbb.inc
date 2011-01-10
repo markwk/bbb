@@ -14,7 +14,7 @@
  * Administrative settings; Menu callback
  */
 function bbb_settings() {
-  if ($_POST['op'] == t('Test Connection')) {
+  if ( isset($_POST['op']) && $_POST['op'] == t('Test Connection')) {
     bbb_test_connection($_POST['bbb_base_url'], $_POST['bbb_security_salt']);
   }
 

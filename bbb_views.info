@@ -1,0 +1,11 @@
+; $Id$
+name = Views Integration
+description = Provides integration and default views.
+package = Big Blue Button
+dependencies[] = bbb
+dependencies[] = views
+core = 7.x
+
+; Views Handlers
+files[] = includes/views_handler_field_bbb_join_attendee.inc
+files[] = includes/views_handler_field_bbb_join_moderator.inc

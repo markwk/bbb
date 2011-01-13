@@ -223,7 +223,7 @@ function bbb_api_generate_querystring($call, $params = array()) {
   // Create the entire query string for your API call without the checksum
   // parameter URL encoding the parameters
   foreach ($params as $key => $value) {
-    $query[] = $key . '=' . drupal_encode_path(trim($value));
+    $query[] = $key . '=' . drupal_urlencode(trim($value));
   }
   // Putting it together
   $query_string = implode('&', $query);

@@ -1,4 +1,3 @@
-//$Id$
 (function($) {
     Drupal.behaviors.bbbCheckStatus = {
         attach : function(context, settings) {
